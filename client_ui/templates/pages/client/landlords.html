@@ -1,0 +1,214 @@
+{% extends "base.html" %}
+
+{% block meta %}
+{% endblock %}
+
+{% block style %}
+{% endblock %}
+
+{% block content %}
+{% include 'nav.html' %}
+
+<body>
+  <!--Main layout-->
+  <div id="loadingSpinner" class="spinner-overlay" style="display:none;">
+    <div class="spinner"></div>
+</div>
+  <main style="margin-top: 58px">
+    <div class="container pt-4">
+
+
+      <!--Section: Sales Performance KPIs-->
+      <section class="mb-4">
+        <div class="card">
+          <div class="card-header text-center py-3">
+            <h5 class="mb-0 text-center">
+              <strong>Enquiries</strong>
+            </h5>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-hover text-nowrap">
+                <thead>
+                  <tr>
+                    <th scope="col">Name</th>
+                    <th scope="col">Number</th>
+                    <th scope="col">Enquiry</th>
+                    <th scope="col">Date</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Action</th>
+
+
+                  </tr>
+                </thead>
+                <tbody id="enquiries-table">
+                  
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <br>
+
+           
+
+
+  
+      </section>
+      
+    </div>
+  </main>
+</body>
+
+<script>
+  // Assuming enquiries_list is passed to the template as a JSON string
+  const enquiriesList = {{ landlords_list | tojson | safe }};
+  const loadingSpinner = document.getElementById('loadingSpinner');
+
+  document.addEventListener('DOMContentLoaded', function() {
+      populateTable();
+      attachSortHandlers();
+      var dashboardTab = document.getElementById('dashboard-tab');
+      var enquiryTab = document.getElementById('enquiry-tab');
+
+      // Add the 'active' class to this element
+      dashboardTab.classList.remove('active');
+      enquiryTab.classList.add('active');
+
+      document.querySelectorAll('.read-more-link').forEach(link => {
+        link.addEventListener('click', function(event) {
+        event.preventDefault();
+        let cell = this.parentElement;
+        let fullText = this.nextElementSibling;
+        let shortText = cell.querySelector('.short-text');
+        shortText.style.display = 'none';
+        let hideLink = cell.querySelector('.hide-text');
+        hideLink.style.display = 'inline';
+        fullText.style.display = 'block';
+        this.style.display = 'none';
+        cell.classList.add('wide-column');
+      });
+  });
+
+  document.querySelectorAll('.hide-text').forEach(link => {
+  link.addEventListener('click', function(event) {
+    event.preventDefault();
+
+    // Use closest to find the nearest parent td
+    let cell = this.parentElement;
+    let shortText = cell.querySelector('.short-text');
+    let fullText = cell.querySelector('.full-text');
+    let readMoreLink = cell.querySelector('.read-more-link');
+
+    shortText.style.display = 'block';
+    fullText.style.display = 'none';
+    this.style.display = 'none';
+    readMoreLink.style.display = 'inline';
+    cell.classList.remove('wide-column'); // This should now work correctly
+  });
+});
+
+
+});
+
+  function populateTable() {
+      let tableBody = document.getElementById('enquiries-table');
+      tableBody.innerHTML = ''; // Clear existing table rows
+
+      enquiriesList.forEach((enquiry) => {
+          let formattedTimestamp = formatDate(enquiry.timestamp);
+
+          var shorter_info = enquiry.additional_information
+          var td_text = ''
+          if (shorter_info.length > 20) {
+            var shorter_info = shorter_info.slice(0, 20);
+            var td_text =  `
+
+                          <td >
+                <span class="short-text"> ${shorter_info}</span>
+                <a href="#" class="read-more-link">Read More</a>
+                <span class="full-text" style="display:none;">  ${enquiry.additional_information} - ${enquiry.postcode}</span>
+                <a href="#" class="hide-text" style="display: none;">Hide</a>
+
+              </td>
+             
+            `
+          }else{
+            var td_text =  `
+                          <td>
+                <span class="short-text"> ${enquiry.additional_information}</span>
+              </td>
+             
+            `
+          }
+          let row = `<tr>
+              <td>${enquiry.full_name}</td>
+              <td>${enquiry.phone_number}</td>
+            
+              ${td_text}
+              <td>${formattedTimestamp}</td>
+              <td> <span class="badge badge-success rounded-pill">New</span></td>
+              <td>
+                <a href="./client/enquiry/${enquiry.id}">  <button type="button" class="btn btn-link btn-sm btn-rounded" onclick="showSpinnerAndBlur()">
+          View
+        </button></a>
+                
+            </td>
+
+          </tr>`;
+          tableBody.innerHTML += row; // Append each row to the table body
+      });
+  }
+
+  // Function to format date
+  function formatDate(dateString) {
+      const options = { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false };
+      const date = new Date(dateString);
+      return new Intl.DateTimeFormat('default', options).format(date).replace(/\//g, '-').replace(',', '');
+  }
+
+  function showSpinnerAndBlur() {
+        var loadingSpinner = document.getElementById('loadingSpinner');
+        var mainContent = document.getElementById('mainContent');
+
+        loadingSpinner.style.display = 'flex';
+        mainContent.style.filter = 'blur(8px)';
+    }
+
+  function attachSortHandlers() {
+      // Get all headers
+      const headers = document.querySelectorAll('th');
+      headers.forEach((header, index) => {
+          header.addEventListener('click', () => {
+              sortColumn(index);
+          });
+      });
+  }
+
+  function sortColumn(columnIndex) {
+      const tableBody = document.getElementById('enquiries-table');
+      let rows = Array.from(tableBody.getElementsByTagName('tr'));
+
+      // Determine if ascending or descending
+      const direction = tableBody.getAttribute('data-sort-dir') === 'asc' ? -1 : 1;
+      // Toggle the direction
+      tableBody.setAttribute('data-sort-dir', direction === 1 ? 'asc' : 'desc');
+
+      // Sort rows
+      rows.sort((a, b) => {
+          const aText = a.cells[columnIndex].innerText.toLowerCase();
+          const bText = b.cells[columnIndex].innerText.toLowerCase();
+
+          return aText.localeCompare(bText) * direction;
+      });
+
+      // Re-add the sorted rows to the table
+      rows.forEach(row => tableBody.appendChild(row));
+  }
+ 
+</script>
+{% endblock %}
+
+{% block script %}
+{% endblock %}
+

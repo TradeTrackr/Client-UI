@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+
+{% block meta %}
+{% endblock %}
+
+{% block style %}
+{% endblock %}
+
+{% block content %}
+{% include 'nav.html' %}
+
+<body>
+  <!--Main layout-->
+  <main style="margin-top: 58px">
+    <div class="container pt-4">
+
+      <div class="row">
+        <div class="col">
+          <nav aria-label="breadcrumb" class="bg-light rounded-3 mb-4">
+            <ol class="breadcrumb mb-0">
+              <li class="breadcrumb-item"><a href="./home">Home</a></li>
+              <li class="breadcrumb-item"  aria-current="page">User</li>
+              <li class="breadcrumb-item active"  aria-current="page">{{email}}</li>
+
+            </ol>
+          </nav>
+        </div>
+      </div>
+      <!--Section: Sales Performance KPIs-->
+      <section class="mb-4">
+
+
+
+          <div class="row">
+
+            <div class="col-lg-12">
+            
+
+              <div id="properties-section">
+
+
+              </div>
+
+           
+              
+            </div>
+          </div>
+
+          </section>
+
+    </div>
+  </main>
+</body>
+
+<script>
+    var enquiry = {{ enquiry | tojson }};
+    function formatDate(dateString) {
+      const options = { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false };
+      const date = new Date(dateString);
+      return new Intl.DateTimeFormat('default', options).format(date).replace(/\//g, '-').replace(',', '');
+  }
+  
+  document.addEventListener('DOMContentLoaded', function() {
+    let counter = 0;
+    const container = document.getElementById('properties-section');
+  let rows = ''; // Initialize an empty string to hold all rows
+
+  for (enq in enquiry){
+          var address_line1=""
+          var address_line2=""
+          var postcode=""
+          var full_name=""
+          var most_recent_activity=""
+
+          // Check if the jsonData has the required properties
+          if (enquiry[enq].address_line1) {
+            var address_line1 = enquiry[enq].address_number_or_name + ' ' +enquiry[enq].address_line1;
+          }
+          if (enquiry[enq].address_line2) {
+            var address_line2 =  enquiry[enq].address_line2;
+          }
+          if (enquiry[enq].postcode) {
+            var postcode =  enquiry[enq].postcode;
+          }
+
+          if (enquiry[enq].full_name) {
+            var full_name =  enquiry[enq].full_name;
+          }
+
+          if (enquiry[enq].most_recent_activity) {
+            var most_recent_activity =  enquiry[enq].most_recent_activity.status;
+
+          }
+        // Generate the card HTML for each enquiry
+        let card = `
+            <div class="col-lg-4">
+              <a href="./client/enquiry/${enquiry[enq].id}">  <div class="card mb-4">
+                    <div class="card-body text-center">
+                        <img src="/static/images/home.png" alt="home" class="img-fluid" style="width: 100px;">
+                        <h5 class="my-3">${address_line1}</h5>
+                        <h5 class="my-3">${address_line2}</h5>
+                        <p class="text-muted mb-1">${postcode}</p>
+                        <p class="text-muted mb-1">${full_name}</p>
+                        <div class="d-flex justify-content-center mb-2">
+                            <span class="badge badge-success rounded-pill">${most_recent_activity}</span>
+                        </div>
+                    </div>
+                </div></a>
+            </div>
+        `;
+
+        // Check if a new row should be started
+        if (counter % 3 === 0) {
+            if (counter !== 0) { // Close the previous row, if it's not the first iteration
+                rows += '</div>';
+            }
+            rows += '<div class="row">'; // Start a new row
+        }
+
+        rows += card; // Append the card to the current row
+        counter++;
+    }
+
+    // Close the last row
+    if (counter % 3 !== 0) {
+        rows += '</div>';
+    }
+
+    // Set the innerHTML of the container to the accumulated rows
+    container.innerHTML = rows;
+
+
+    function createRowDiv() {
+        const rowDiv = document.createElement('div');
+        rowDiv.className = 'row';
+        return rowDiv;
+    }
+
+
+});
+
+
+</script>
+{% endblock %}
+
+{% block script %}
+{% endblock %}
+

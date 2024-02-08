@@ -1,0 +1,449 @@
+{% extends "base.html" %}
+
+{% block meta %}
+{% endblock %}
+
+{% block style %}
+{% endblock %}
+
+{% block content %}
+{% include 'nav.html' %}
+<style>
+
+
+</style>
+<body>
+  <!--Main layout-->
+  <div id="loadingSpinner" class="spinner-overlay" style="display:none;">
+    <div class="spinner"></div>
+</div>
+  <main style="margin-top: 58px">
+    <div class="container pt-4">
+
+
+      <!--Section: Sales Performance KPIs-->
+      <section class="mb-4">
+        <div class="card">
+          <div class="card-header text-center py-3">
+            <h5 class="mb-0 text-center">
+              <strong>Enquiries from the past 7 days</strong>
+            </h5>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-hover text-nowrap">
+                <thead>
+                  <tr>
+                    <th scope="col">Name</th>
+                    <th scope="col">Number</th>
+                    <th scope="col">Enquiry</th>
+                    <th scope="col">Date</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Action</th>
+
+
+                  </tr>
+                </thead>
+                <tbody id="enquiries-table">
+                  
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <br>
+
+              <div class="card">
+                <div class="card-header text-center py-3">
+                  <h5 class="mb-0 text-center">
+                    <strong>Calendar</strong>
+                  </h5>
+                </div>
+                <div class="card-body p-0">
+                  <div id="calendar"></div>
+                </div>
+              </div>
+            
+
+              <div class="modal modal-top fade calendar-modal" id="modal-view-event-add" tabindex="-1" aria-labelledby="newquotemodalLabel" aria-hidden="true">
+            
+                <form action="./dashboard/new_event" id="new-quote-form" method="POST">
+
+                  <div class="modal-dialog">
+                    <div class="modal-content" style="height: 560px;">
+                      <div class="modal-header">
+                        <h5 class="modal-title" id="newquotemodalLabel">New Event</h5>
+                        <button type="button" class="btn-close" data-mdb-ripple-init data-dismiss="modal" aria-label="Close"></button>
+                      </div>
+                      <div class="modal-body">
+      
+                              <div class="form-outline" data-mdb-input-init>
+                              <input type="text" id="typeText" class="form-control" name='quote_title' required/>
+                              <label class="form-label" for="typeText">Title</label>
+                            </div>
+                            <br>
+      
+                            <div class="form-outline" data-mdb-input-init>
+                              <textarea class="form-control" id="textAreaExample" rows="4" name='quote_details' required></textarea>
+                              <label class="form-label" for="textAreaExample">Details</label>
+                            </div>
+                            <br>
+      
+         
+      
+                            <div class="form-outline" data-mdb-input-init>
+                              <select name="category_id" class="form-select" id="category_box" >
+                                <option value="">Select Category</option>
+      
+                            </select>
+            
+                            </div>  
+                        
+                            <br>
+                        
+        
+                            <div id="date-picker-example" class="md-form md-outline input-with-post-icon datepicker" aria-haspopup="true" aria-expanded="false" aria-readonly="false" aria-owns="date-picker-example_root">
+                              <label for="datetimePickerStart"> Appointment Start Date: </label>
+                              <input type="datetime-local" class="form-control" id="datetimePickerStart" name="scheduled_start_date_and_time">
+                            </div><br>
+                            
+                            <div id="date-picker-example" class="md-form md-outline input-with-post-icon datepicker" aria-haspopup="true" aria-expanded="false" aria-readonly="false" aria-owns="date-picker-example_root">
+                              <label for="datetimePickerEnd"> Appointment End Date: </label>
+                              <input type="datetime-local" class="form-control" id="datetimePickerEnd" name="scheduled_end_date_and_time">
+                            </div>
+                           
+                            <br>  
+                            <div class="form-check">
+                              <input class="form-check-input" type="checkbox" id="allDayCheckbox" name="all_day">
+                              <label class="form-check-label" for="allDayCheckbox">
+                                All Day
+                              </label>
+                            </div>
+                            <br>  
+  
+                        
+                      <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary" >New Quote</button>
+                      </div>
+                    </div>
+      
+                  </div>
+                </div>
+            </form>
+    
+                </div>
+                
+
+
+  
+      </section>
+      
+    </div>
+  </main>
+</body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.9.0/fullcalendar.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/air-datepicker/2.2.3/js/datepicker.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/air-datepicker/2.2.3/js/i18n/datepicker.en.js"></script>
+
+<script>
+  // Global variables
+const loadingSpinner = document.getElementById('loadingSpinner');
+let categories_list = [];
+let get_quotes = [];
+
+// Document ready function
+$(document).ready(function() {
+  showSpinnerAndBlur();
+  fetchCategories();
+  fetchQuotes();
+  initializeEventListeners();
+});
+
+// Fetch Categories from the server
+function fetchCategories() {
+  fetch('./dashboard/get_categories', {
+          method: 'GET',
+      })
+      .then(response => response.json())
+      .then(data => {
+        categories_list = data['categories']
+        populateCategorySelect();
+
+      })
+      .catch(error => {
+          console.error('Error:', error);
+      });
+}
+
+// Populate Category Select box
+function populateCategorySelect() {
+  if (categories_list.length > 0) {
+    const selectBox = document.getElementById('category_box');
+    categories_list.forEach(function(category) {
+      const option = new Option(category.category, category.id);
+      selectBox.add(option);
+    });
+  }
+}
+
+// Fetch Quotes and initialize FullCalendar
+function fetchQuotes() {
+  fetch('./dashboard/get_quotes', {
+    method: 'GET',
+  })
+  .then(response => response.json())
+  .then(data => {
+    get_quotes = data['quotes'];
+    const converted_quotes = convertToFullCalendarEvents(get_quotes, categories_list);
+    initializeFullCalendar(converted_quotes);
+    hideSpinnerAndUnblur();
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    hideSpinnerAndUnblur();
+  });
+}
+
+// Initialize FullCalendar with events
+function initializeFullCalendar(events) {
+  $('#calendar').fullCalendar({
+    themeSystem: 'bootstrap4',
+    businessHours: false,
+    defaultView: 'agendaWeek',
+    defaultTimedEventDuration: '01:00:00', 
+    timeFormat: 'h:mma',
+    scrollTime: '06:00:00',
+    editable: true,
+    header: {
+      left: 'title',
+      center: 'month,agendaWeek,agendaDay',
+      right: 'today prev,next'
+    },
+    events: events,
+    eventRender: function(event, element) {
+      if (event.icon) {
+        element.find(".fc-title").prepend("<i class='fa fa-" + event.icon + "'></i>");
+      }
+      element.css({
+        'border': '1px solid #eeeeee',
+        'border-left': '3px solid ' + event.borderColor,
+        'border-bottom': '3px solid ' + event.borderColor
+      });
+    },
+    eventDrop: function(event, delta, revertFunc, jsEvent, ui, view) {
+
+    let dateFormat = event.allDay ? 'YYYY-MM-DDT00:00:00' : 'YYYY-MM-DDTHH:mm:ss';
+
+    let newStart = event.start.format(dateFormat);
+    newStart = newStart.replace('A', 'T');
+
+    let newEnd = event.end ? event.end.format(dateFormat) : null;
+
+    var defaultDuration = moment.duration($('#calendar').fullCalendar('option', 'defaultTimedEventDuration')); // get the default and convert it to proper type
+    newEnd = event.end || event.start.clone().add(defaultDuration); 
+
+    if (event.allDay && newEnd) {
+      newEnd = newEnd.format();
+      newEnd = newEnd.replace('A', 'T');
+    }
+
+    if (!confirm("Are you sure about this change?")) {
+      revertFunc();
+    } else {
+      updateEventInDatabase(event.id, newStart, newEnd, event.allDay);
+    }
+  },
+    dayClick: function() {
+      $('#modal-view-event-add').modal();
+    },
+    eventClick: function(event, jsEvent, view) {
+      if (event.icon) {
+        $('.event-icon').html("<i class='fa fa-" + event.icon + "'></i>");
+      }
+      $('.event-title').html(event.title);
+      $('.event-body').html('<p>'+event.notes+'</p><br><p>'+event.start+'</p><br><p>'+event.end+'</p>');
+      $('#modal-view-event').modal();
+    },
+  });
+}
+
+function updateEventInDatabase(eventId, newStart, newEnd, allDay) {
+  // Assuming you have a route and method to handle this on your server
+  
+  fetch('./dashboard/update_event/'+ eventId, {
+    method: 'POST',
+    headers: {
+    "Content-type": "application/json; charset=UTF-8"
+    },
+    body: JSON.stringify({
+      scheduled_start_date_and_time: newStart,
+      scheduled_end_date_and_time: newEnd,
+      all_day: allDay
+    }),
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      window.location.reload();
+    } else {
+      // Handle failure, maybe revert the event position and show a message
+    }
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    // Handle errors here, like network issues
+  });
+}
+
+// Convert event data to FullCalendar format
+function convertToFullCalendarEvents(data, categories_list) {
+  return data.map(function(event) {
+    const category = categories_list.find(cat => cat.id === event.category_id);
+    const eventColor = category ? category.colour : '#5d5386';
+    return {
+      title: event.event_title ?? event?.quote?.quote_title ?? 'No Title',
+      start: event.scheduled_start_date_and_time ?? null,
+      end: event.scheduled_end_date_and_time ?? null,
+      id: event.id, 
+      event_title: event.event_title ?? event?.quote?.quote_title,
+      notes: event.notes ?? '',
+      allDay: event.all_day ?? false,
+      borderColor: eventColor
+    };
+  });
+}
+
+// Initialize other event listeners
+function initializeEventListeners() {
+  attachAllDayCheckboxHandler();
+  attachSortHandlers();
+  activateDashboardTab();
+  attachReadMoreHandlers();
+  attachHideTextHandlers();
+  initializeDateTimePickers();
+  attachNewQuoteFormSubmitHandler();
+}
+
+// Attach All-Day Checkbox Handler
+function attachAllDayCheckboxHandler() {
+  $('#allDayCheckbox').change(function () {
+    $('#datetimePickerEnd').prop('disabled', this.checked);
+  });
+}
+
+// Activate Dashboard Tab
+function activateDashboardTab() {
+  $('#dashboard-tab').addClass('active');
+}
+
+// Attach Read More Handlers
+function attachReadMoreHandlers() {
+  $('.read-more-link').click(function(event) {
+    event.preventDefault();
+    toggleReadMore(this);
+  });
+}
+
+function attachSortHandlers() {
+    // Get all headers
+    const headers = document.querySelectorAll('th');
+    headers.forEach((header, index) => {
+        header.addEventListener('click', () => {
+            sortColumn(index);
+        });
+    });
+}
+
+// Attach Hide Text Handlers
+function attachHideTextHandlers() {
+  $('.hide-text').click(function(event) {
+    event.preventDefault();
+    toggleHideText(this);
+  });
+}
+
+// Initialize Date Time Pickers
+function initializeDateTimePickers() {
+  $('.datetimepicker').datepicker({
+    timepicker: true,
+    language: 'en',
+    range: true,
+    multipleDates: true,
+    multipleDatesSeparator: " - "
+  });
+}
+
+// Attach New Quote Form Submit Handler
+function attachNewQuoteFormSubmitHandler() {
+  $('#new-quote-form').submit(function(event) {
+    event.preventDefault();
+    showSpinnerAndBlur();
+    submitNewQuoteForm(new FormData(this));
+  });
+}
+
+// Submit New Quote Form
+function submitNewQuoteForm(formData) {
+  fetch('./dashboard/new_event', {
+    method: 'POST',
+    body: formData
+  })
+  .then(response => response.json())
+  .then(data => {
+    console.log(data);
+    window.location.reload();
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    hideSpinnerAndUnblur();
+  });
+}
+
+// Toggle Read More Text
+function toggleReadMore(element) {
+  let cell = element.parentElement;
+  let fullText = element.nextElementSibling;
+  let shortText = cell.querySelector('.short-text');
+  shortText.style.display = 'none';
+  let hideLink = cell.querySelector('.hide-text');
+  hideLink.style.display = 'inline';
+  fullText.style.display = 'block';
+  element.style.display = 'none';
+  cell.classList.add('wide-column');
+}
+
+// Toggle Hide Text
+function toggleHideText(element) {
+  let cell = element.parentElement;
+  let shortText = cell.querySelector('.short-text');
+  let fullText = cell.querySelector('.full-text');
+  let readMoreLink = cell.querySelector('.read-more-link');
+  shortText.style.display = 'block';
+  fullText.style.display = 'none';
+  element.style.display = 'none';
+  readMoreLink.style.display = 'inline';
+  cell.classList.remove('wide-column');
+}
+
+// Show Spinner and Blur Content
+function showSpinnerAndBlur() {
+  loadingSpinner.style.display = 'flex';
+  // Additional content blur can be added here if needed
+}
+
+// Hide Spinner and Unblur Content
+function hideSpinnerAndUnblur() {
+  loadingSpinner.style.display = 'none';
+  // Remove content blur here if it was added in showSpinnerAndBlur()
+}
+ 
+</script>
+{% endblock %}
+
+{% block script %}
+{% endblock %}
+

@@ -1,0 +1,541 @@
+{% extends "base.html" %}
+
+{% block meta %}
+{% endblock %}
+
+{% block style %}
+{% endblock %}
+
+{% block content %}
+{% include 'nav.html' %}
+<body>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.37/css/bootstrap-datetimepicker-standalone.css" />
+
+  <!--Main layout-->
+  <main style="margin-top: 58px">
+    <div class="container pt-4">
+
+      <div class="row">
+        <div class="col-md-10">
+          <nav aria-label="breadcrumb" class="bg-light rounded-3 mb-4">
+            <ol class="breadcrumb mb-0">
+              <li class="breadcrumb-item"><a href="./home">Home</a></li>
+              <li class="breadcrumb-item"><a href="./user/profile/{{enquiry['email']}}">User</a></li>
+              <li class="breadcrumb-item active" aria-current="page">Enquiry</li>
+            </ol>
+          </nav>
+          </div>
+          <div class="col-md-2">
+
+          <button type="button" class="btn btn-primary" data-mdb-ripple-init data-mdb-modal-init data-mdb-target="#newquotemodal">
+           New Quote
+          </button>
+          
+          <!-- Modal -->
+          <div class="modal fade" id="newquotemodal" tabindex="-1" aria-labelledby="newquotemodalLabel" aria-hidden="true">
+            
+            <form action="./client/new_quote" id="new-quote-form" method="POST">
+
+            <div class="modal-dialog">
+              <div class="modal-content" style="height: 560px;">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="newquotemodalLabel">New Quote</h5>
+                  <button type="button" class="btn-close" data-mdb-ripple-init data-mdb-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                <input type="text" id="typeText" class="form-control" name='enquiry_id' hidden value="{{enquiry['id']}}"/>
+
+                        <div class="form-outline" data-mdb-input-init>
+                        <input type="text" id="typeText" class="form-control" name='quote_title' required/>
+                        <label class="form-label" for="typeText">Title</label>
+                      </div>
+                      <br>
+
+                      <div class="form-outline" data-mdb-input-init>
+                        <textarea class="form-control" id="textAreaExample" rows="4" name='quote_details' required></textarea>
+                        <label class="form-label" for="textAreaExample">Details</label>
+                      </div>
+                      <br>
+
+                      <div class="form-outline" data-mdb-input-init>
+                        <input type="number" id="typeNumber" name="amount" class="form-control" required />
+                        <label class="form-label" for="typeNumber">Price</label>
+                      </div>
+                      <br>
+
+                      <div class="form-outline" data-mdb-input-init>
+                        <select name="category_id" class="form-select" id="category_box" required>
+                          <option value="">Select Category</option>
+
+                      </select>
+      
+                      </div>  
+                  
+                      <br>
+                      <div class="form-outline" data-mdb-input-init>
+                        <select name="quote_type" class="form-select" id="quote_type" required>
+                          <option value="">Select Quote Type</option>
+                          <option value="Estimate">Estimate</option>
+                          <option value="Formal">Formal</option>
+
+                      </select>
+      
+                      </div>  
+                      <br>
+                      
+                      <div id="date-picker-example" class="md-form md-outline input-with-post-icon datepicker" aria-haspopup="true" aria-expanded="false" aria-readonly="false" aria-owns="date-picker-example_root">
+                        <label for="datetimePickerStart"> Appointment Start Date: </label>
+                        <input type="datetime-local" class="form-control" id="datetimePickerStart" name="scheduled_start_date_and_time">
+                      </div><br>
+                      
+                      <div id="date-picker-example" class="md-form md-outline input-with-post-icon datepicker" aria-haspopup="true" aria-expanded="false" aria-readonly="false" aria-owns="date-picker-example_root">
+                        <label for="datetimePickerEnd"> Appointment End Date: </label>
+                        <input type="datetime-local" class="form-control" id="datetimePickerEnd" name="scheduled_end_date_and_time">
+                      </div>
+                     
+                      <br>  
+                      <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="allDayCheckbox" name="all_day">
+                        <label class="form-check-label" for="allDayCheckbox">
+                          All Day
+                        </label>
+                      </div>
+                      
+                  
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-mdb-ripple-init data-mdb-dismiss="modal">Close</button>
+                  <button type="submit" class="btn btn-primary" data-mdb-ripple-init>New Quote</button>
+                </div>
+              </div>
+
+            </div>
+          </div>
+      </form>
+
+        </div>
+
+      </div>
+      <section class="mb-4">
+
+
+
+          <div class="row">
+            <div class="col-lg-4">
+              <div class="card mb-4">
+                <div class="card-body text-center">
+                  <img src="/static/images/home.png" alt="home"
+                    class="img-fluid" style="width: 100px;">
+                  <h5 class="my-3" id="enquiry-address-1"></h5>
+                  <h5 class="my-3" id="enquiry-address-2"></h5>
+
+                  <p class="text-muted mb-1"id="enquiry-postcode"></p>
+                  <div class="d-flex justify-content-center mb-2">
+                    <span class="badge badge-success rounded-pill">New</span>
+                  </div>
+                </div>
+              </div>
+
+
+                  <div class="card mb-4 mb-md-0">
+                    <div class="card-body">
+                      <p class="mb-4"><span class="text-primary font-italic me-1">Enquiry</span> Progress
+                      </p>
+
+                  <ul class="list-group list-group-flush rounded-3" id="enquiry-progress">
+
+
+                  </ul>
+                </div>
+              </div>
+            </div>
+            <div class="col-lg-8">
+              <div class="card mb-4">
+                <div class="card-body">
+                  <div class="row">
+                    <div class="col-sm-3">
+                      <p class="mb-0">Full Name</p>
+                    </div>
+                    <div class="col-sm-9">
+                      <p class="text-muted mb-0" id="enquiry-name"></p>
+                    </div>
+                  </div>
+                  <hr>
+                  <div class="row">
+                    <div class="col-sm-3">
+                      <p class="mb-0">Email</p>
+                    </div>
+                    <div class="col-sm-9">
+                      <p class="text-muted mb-0" id="enquiry-email"></p>
+                    </div>
+                  </div>
+                  <hr>
+                  <div class="row">
+                    <div class="col-sm-3">
+                      <p class="mb-0">Phone</p>
+                    </div>
+                    <div class="col-sm-9">
+                      <p class="text-muted mb-0" id="enquiry-number"></p>
+                    </div>
+                  </div>
+                  <hr>
+                  <div class="row">
+                    <div class="col-sm-3">
+                      <p class="mb-0">Enquiry Date</p>
+                    </div>
+                    <div class="col-sm-9">
+                      <p class="text-muted mb-0" id="enquiry-date"></p>
+                    </div>
+                  </div>
+                  <br>
+
+                  <hr>
+                  
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-md-12">
+                  <div class="card mb-4 mb-md-0">
+                    <div class="card-body">
+                      <p class="mb-4"><span class="text-primary font-italic me-1">Enquiry</span> Information
+                      </p>
+ 
+  <section class="">
+    
+    <div class="row"  data-mdb-zoom-effect="true">
+      <p class="mb-0" id="info-container"></p>
+
+    </div>
+  </section>
+
+
+                    </div>
+                  </div>
+                </div>
+                
+              </div><br>
+
+              <div class="row">
+                <div class="col-md-12">
+                  <div class="card mb-4 mb-md-0">
+                    <div class="card-body">
+                      <p class="mb-4"><span class="text-primary font-italic me-1">Enquiry</span> Photos
+                      </p>
+ 
+  <section class="">
+    
+    <div class="row" id="image-container" data-mdb-zoom-effect="true">
+      
+    </div>
+  </section>
+
+
+                    </div>
+                  </div>
+                </div>
+                
+              </div>
+              <br>
+              <div class="row">
+                <div class="col-md-12">
+                  <div class="card mb-4 mb-md-0">
+                    <div class="card-body">
+                      <p class="mb-4"><span class="text-primary font-italic me-1">Enquiry</span> Quotes
+                      </p>
+ 
+  <section class="">
+   
+    <div class="row" id="quotes-container" data-mdb-zoom-effect="true">
+      
+    </div>
+  </section>
+
+
+                    </div>
+                  </div>
+                </div>
+                
+              </div>
+            
+            </div>
+          </section>
+          <div class="modal" id="imageModal" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <button type="button" class="btn-close" data-mdb-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                  <img src="" id="modal-img" class="img-fluid" />
+                </div>
+              </div>
+            </div>
+          </div>
+    </div>
+  </main>
+</body>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.9.0/fullcalendar.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.30.1/moment.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.37/js/bootstrap-datetimepicker.min.js"></script>
+
+<script>
+jQuery(document).ready(function($) {
+    if (window.jQuery().datetimepicker) {
+        $('.datetimepicker').datetimepicker({
+            // Formats
+            // follow MomentJS docs: https://momentjs.com/docs/#/displaying/format/
+            format: 'DD-MM-YYYY hh:mm A',
+            
+            // Your Icons
+            // as Bootstrap 4 is not using Glyphicons anymore
+            icons: {
+                time: 'fa fa-clock-o',
+                date: 'fa fa-calendar',
+                up: 'fa fa-chevron-up',
+                down: 'fa fa-chevron-down',
+                previous: 'fa fa-chevron-left',
+                next: 'fa fa-chevron-right',
+                today: 'fa fa-check',
+                clear: 'fa fa-trash',
+                close: 'fa fa-times'
+            }
+        });
+    }
+});
+
+
+</script>
+<script>
+
+    var jsonData = {{ enquiry | tojson }};
+    var jsonDataCategories = {{ categories | tojson }};
+    var jsonDataQuotes = {{ quotes | tojson }};
+
+    function formatDate(dateString) {
+      const options = { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false };
+      const date = new Date(dateString);
+      return new Intl.DateTimeFormat('default', options).format(date).replace(/\//g, '-').replace(',', '');
+  }
+    document.addEventListener('DOMContentLoaded', function() {
+      if (! jsonDataCategories == []) {
+        var selectBox = document.getElementById('category_box'); // Replace 'select_box' with your select element's ID
+        jsonDataCategories['categories'].forEach(function(category) {
+
+            var option = document.createElement('option');
+            option.value = category.id;
+            option.text = category.category;
+            selectBox.appendChild(option);
+        });
+              
+      }
+
+      var allDayCheckbox = document.getElementById('allDayCheckbox');
+  var datetimePickerEnd = document.getElementById('datetimePickerEnd');
+
+  allDayCheckbox.addEventListener('change', function () {
+    datetimePickerEnd.disabled = this.checked;
+  });
+  
+        // Check if the jsonData has the required properties
+        if (jsonData.address_line1) {
+            document.getElementById('enquiry-address-1').textContent = jsonData.address_number_or_name + ' ' +jsonData.address_line1;
+        }
+        if (jsonData.address_line2) {
+            document.getElementById('enquiry-address-2').textContent = jsonData.address_line2;
+        }
+        if (jsonData.postcode) {
+            document.getElementById('enquiry-postcode').textContent = jsonData.postcode;
+        }
+        if (jsonData.email) {
+            document.getElementById('enquiry-email').textContent = jsonData.email;
+        }
+        if (jsonData.full_name) {
+            document.getElementById('enquiry-name').textContent = jsonData.full_name;
+        }
+        if (jsonData.phone_number) {
+            document.getElementById('enquiry-number').textContent = jsonData.phone_number;
+        }
+        if (jsonData.timestamp) {
+          let formattedTimestamp = formatDate(jsonData.timestamp);
+            document.getElementById('enquiry-date').textContent = formattedTimestamp;
+        }
+        if (jsonData.additional_information) {
+            document.getElementById('info-container').textContent = jsonData.additional_information;
+        }
+        if (jsonData.activities) {
+          const container = document.getElementById('enquiry-progress');
+          for(count in jsonData.activities){
+
+            const listattag = document.createElement('li');
+            listattag.className = "list-group-item d-flex justify-content-between align-items-center p-3"
+
+            const statusdiv = document.createElement('div');
+            statusdiv.className = "me-4"
+            statusdiv.innerHTML = jsonData.activities[count].status
+
+            let formattedTimestamp = formatDate(jsonData.activities[count].timestamp);
+            const icontag = document.createElement('i');
+            icontag.textContent = formattedTimestamp
+
+            listattag.appendChild(statusdiv);
+            listattag.appendChild(icontag);
+
+            container.appendChild(listattag);
+
+
+
+          }
+        }
+
+
+    const imageDict = jsonData.photos
+    const container = document.getElementById('image-container');
+    let row = createRowDiv();
+    let index = 0;
+
+    for (const [name, url] of Object.entries(imageDict)) {
+        const colDiv = document.createElement('div');
+        colDiv.className = 'col-lg-4 col-md-12 mb-4 mb-lg-0';
+
+        const bgImageDiv = document.createElement('div');
+        bgImageDiv.className = 'bg-image hover-overlay ripple shadow-1-strong rounded';
+        bgImageDiv.setAttribute('data-ripple-color', 'light');
+
+        const img = document.createElement('img');
+        img.src = url;
+        img.className = 'w-100';
+        img.alt = name;
+
+
+        bgImageDiv.appendChild(img);
+        colDiv.appendChild(bgImageDiv);
+        row.appendChild(colDiv);
+
+        index++;
+        if (index % 3 === 0 || index === Object.keys(imageDict).length) {
+            container.appendChild(row);
+            row = createRowDiv(); 
+        }
+    }
+    const images = document.querySelectorAll('#image-container img');
+    images.forEach(img => {
+      img.addEventListener('click', function() {
+        document.getElementById('modal-img').src = this.src; // Set the source of the modal image
+        const modal = new mdb.Modal(document.getElementById('imageModal')); // Assuming you are using mdb (Material Design for Bootstrap)
+        modal.show();
+      });
+    });
+
+    if (! jsonDataQuotes == []) {
+      console.log(jsonDataQuotes['quotes'])
+
+      const quotes_container = document.getElementById('quotes-container');
+
+      for(count in jsonDataQuotes['quotes']){
+       var html =  `
+       <div class="d-flex justify-content-between align-items-center mb-5">
+    <div class="d-flex flex-row align-items-center">
+      <h4 class="mt-1">${jsonDataQuotes['quotes'][count].quote_title}</h4>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-7 col-lg-7 col-xl-6 mb-4 mb-md-0">
+
+      <div>
+
+        <p>
+          ${jsonDataQuotes['quotes'][count].quote_details}
+        </p>
+
+        <hr />
+
+        <div class="d-flex justify-content-between mt-2">
+          <span class="lh-sm">Quote Status</span>
+          <span>${jsonDataQuotes['quotes'][count].status}</span>
+        </div>
+
+        <br>
+        <div class="d-flex justify-content-between mt-2">
+          <span class="lh-sm">Quote Type</span>
+          <span>${jsonDataQuotes['quotes'][count].quote_type}</span>
+        </div>
+
+
+ 
+      </div>
+    </div>
+    <div class="col-md-5 col-lg-4 col-xl-4 offset-lg-1 offset-xl-2">
+      <div class="p-3" style="background-color: #eee;">
+        <span class="fw-bold">Order Recap</span>
+        <div class="d-flex justify-content-between mt-2">
+          <span>Quote Price</span> <span>£${jsonDataQuotes['quotes'][count].amount}</span>
+        </div>
+      
+        <hr />
+        <div class="d-flex justify-content-between mt-2">
+          <span>Total </span> <span class="text-success">£${jsonDataQuotes['quotes'][count].amount}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <hr><br>
+       `
+
+          quotes_container.innerHTML += html;
+
+
+      }
+
+    
+  }
+
+
+  function createRowDiv() {
+        const rowDiv = document.createElement('div');
+        rowDiv.className = 'row';
+        return rowDiv;
+    }
+});
+
+  document.getElementById('new-quote-form').addEventListener('submit', function(event) {
+      event.preventDefault(); // Prevents the default form submission
+  
+      // Add your spinner here
+      // For example, you could add a spinner element or class to a div
+  
+      // Gather form data
+      var formData = new FormData(this);
+  
+      // Perform the AJAX request
+      fetch('./client/new_quote', {
+          method: 'POST',
+          body: formData
+      })
+      .then(response => response.json())
+      .then(data => {
+        console.log(data)
+          // Handle response data
+          // Remove the spinner
+          // Optionally, you can check the response and decide whether to reload
+  
+          // Reload the page
+          window.location.reload();
+      })
+      .catch(error => {
+          console.error('Error:', error);
+          // Remove the spinner
+          // Handle the error
+      });
+  });
+  
+  </script>
+  
+{% endblock %}
+
+{% block script %}
+{% endblock %}
+

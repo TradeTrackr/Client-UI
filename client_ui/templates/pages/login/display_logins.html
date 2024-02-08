@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+
+{% block meta %}
+{% endblock %}
+
+{% block style %}
+{% endblock %}
+
+{% block content %}
+<body style="background-color: #9A616D;">
+  <div id="loadingSpinner" class="spinner-overlay" style="display:none;">
+    <div class="spinner"></div>
+</div>
+
+  <div class="container">
+
+
+  <!--Main layout-->
+    <div class="container pt-4">
+      <div id="alert-messages">
+
+      </div>
+      <!-- Section: Main chart -->
+      <section class="vh-100">
+        <div class="container py-5 h-100">
+          <div class="row d-flex justify-content-center align-items-center h-100">
+            <div class="col col-xl-10">
+              <div class="card" style="border-radius: 1rem;">
+                <div class="row g-0">
+                  <div class="col-md-6 col-lg-5 d-none d-md-block">
+                    <img src="/static/images/login-photo.jpg"
+                      alt="login form" class="img-fluid" style="border-radius: 1rem 0 0 1rem;" />
+                  </div>
+                  <div class="col-md-6 col-lg-7 d-flex align-items-center">
+                    <div class="card-body p-4 p-lg-5 text-black">
+      
+                      <form action="./login" id="login-form" method="POST">
+      
+         
+                        <div class="d-flex align-items-center mb-3 pb-1">
+                          <i class="fas fa-cubes fa-2x me-3" style="color: #ff6219;"></i>
+                          <span class="h1 fw-bold mb-0">TradeTrakr</span>
+                        </div>
+      
+                        <h5 class="fw-normal mb-3 pb-3" style="letter-spacing: 1px;">Sign into your account</h5>
+      
+                        <div class="form-outline mb-4">
+                          <input type="email" name="email" id="emailaddress" required class="form-control form-control-lg" />
+                          <label class="form-label" for="emailaddress">Email address</label>
+                        </div>
+      
+                        <div class="form-outline mb-4">
+                          <input type="password" name="password" id="password" required class="form-control form-control-lg" />
+                          <label class="form-label" for="password">Password</label>
+                        </div>
+      
+                        <div class="pt-1 mb-4">
+                          <button class="btn btn-dark btn-lg btn-block" type="submit">Login</button>
+                        </div>
+      
+                        <p class="mb-5 pb-lg-2" style="color: #393f81;"> <a href="#!"
+                        >Forgot password?</a></p>
+                        <a href="#!" class="small text-muted">Terms of use.</a>
+                        <a href="#!" class="small text-muted">Privacy policy</a>
+
+     
+                      </form>
+      
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+</div>
+</body>
+
+
+<script>
+
+  function unhidepassword() {
+    var x = document.getElementById("password");
+    if (x.type === "password") {
+      x.type = "text";
+    } else {
+      x.type = "password";
+    }
+  }
+ 
+    const loginForm = document.getElementById('login-form');
+    const loadingSpinner = document.getElementById('loadingSpinner');
+    const mainContent = document.querySelector('.container');
+    const alertMessagesDiv = document.getElementById('alert-messages');
+
+    loginForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+  
+      // Check if form fields are valid
+      if (!loginForm.checkValidity()) {
+        loginForm.reportValidity(); // This will show the browser's default tooltip for invalid inputs
+        return; // Prevent the form from submitting and stop the script
+      }
+  
+      // Show spinner and blur background
+      loadingSpinner.style.display = 'flex';
+      mainContent.style.filter = 'blur(8px)';
+  
+      let formData = new FormData(loginForm);
+  
+      fetch('./login/validate_login', {
+        method: 'POST',
+        body: formData
+      })
+      .then(response => response.json())
+      .then(data => {
+        // Handle success
+        if (data['result'] == 'error-password-username'){
+          displayErrorMessage();
+        } else if (data['result'] == 'OK'){
+          window.location.href = "/home";
+        }
+
+
+      })
+      .catch((error) => {
+        // Handle errors
+        console.error('Error:', error);
+      })
+      .finally(() => {
+        // Hide spinner and unblur background
+        loadingSpinner.style.display = 'none';
+        mainContent.style.filter = 'none';
+      });
+    });
+
+
+  function displayErrorMessage() {
+
+    const errorMessageHtml = `
+      <div class="col-sm-12">
+        <div class="alert alert-danger justify-content-between">
+          <strong>Error! </strong>  Wrong username or password combination
+        </div>
+      </div>
+    `;
+
+    // Append or replace the existing error message
+    alertMessagesDiv.innerHTML = errorMessageHtml;
+
+  }
+  </script>
+  
+
+{% endblock %}
+
+{% block script %}
+{% endblock %}
