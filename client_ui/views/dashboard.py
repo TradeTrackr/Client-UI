@@ -4,7 +4,7 @@ from client_ui.config import Config
 from client_ui.utilities import authentication
 from client_ui.dependencies.enquiry_api import EnquiryApi
 from client_ui.dependencies.quotes_api import QuotesAPI
-from client_ui.dependencies.account_api import TraderAccountApi
+from client_ui.dependencies.account_api import AccountApi
 
 dashboard = Blueprint('dashboard', __name__)
 
@@ -48,6 +48,6 @@ def update_event(id):
 @dashboard.route("/dashboard/get_categories")
 @authentication.token_required
 def get_categories():
-    categories = TraderAccountApi().get_categories()
+    categories = AccountApi().get_categories()
     print(categories)
     return categories

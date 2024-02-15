@@ -7,7 +7,7 @@
 {% endblock %}
 
 {% block content %}
-<body style="background-color: #9A616D;">
+<body>
   <div id="loadingSpinner" class="spinner-overlay" style="display:none;">
     <div class="spinner"></div>
 </div>
@@ -28,13 +28,13 @@
               <div class="card" style="border-radius: 1rem;">
                 <div class="row g-0">
                   <div class="col-md-6 col-lg-5 d-none d-md-block">
-                    <img src="/static/images/login-photo.jpg"
+                    <img src="./static/images/login-photo.jpg"
                       alt="login form" class="img-fluid" style="border-radius: 1rem 0 0 1rem;" />
                   </div>
                   <div class="col-md-6 col-lg-7 d-flex align-items-center">
                     <div class="card-body p-4 p-lg-5 text-black">
       
-                      <form action="./login" id="login-form" method="POST">
+                      <form action="./login/validate_login" id="login-form" method="POST">
       
          
                         <div class="d-flex align-items-center mb-3 pb-1">
@@ -42,26 +42,19 @@
                           <span class="h1 fw-bold mb-0">TradeTrakr</span>
                         </div>
       
-                        <h5 class="fw-normal mb-3 pb-3" style="letter-spacing: 1px;">Sign into your account</h5>
-      
+                        <h5 class="fw-normal" style="letter-spacing: 1px;">1. Enter your email address</h5>
+                        <h5 class="fw-normal" style="letter-spacing: 1px;">2. We'll send you an email instantly</h5>
+                        <h5 class="fw-normal" style="letter-spacing: 1px;">3. Click the link in the email to log in</h5>
+
                         <div class="form-outline mb-4">
                           <input type="email" name="email" id="emailaddress" required class="form-control form-control-lg" />
                           <label class="form-label" for="emailaddress">Email address</label>
                         </div>
       
-                        <div class="form-outline mb-4">
-                          <input type="password" name="password" id="password" required class="form-control form-control-lg" />
-                          <label class="form-label" for="password">Password</label>
-                        </div>
       
                         <div class="pt-1 mb-4">
-                          <button class="btn btn-dark btn-lg btn-block" type="submit">Login</button>
+                          <button class="btn btn-dark btn-lg btn-block" type="submit">Request Magic Link</button>
                         </div>
-      
-                        <p class="mb-5 pb-lg-2" style="color: #393f81;"> <a href="#!"
-                        >Forgot password?</a></p>
-                        <a href="#!" class="small text-muted">Terms of use.</a>
-                        <a href="#!" class="small text-muted">Privacy policy</a>
 
      
                       </form>
@@ -118,9 +111,11 @@
       .then(data => {
         // Handle success
         if (data['result'] == 'error-password-username'){
-          displayErrorMessage();
+          displayErrorMessage('Wrong username or password combination');
+        } else if (data['result'] == 'error-wrong-url'){
+          displayErrorMessage('Wrong URL used for this username and password combination');
         } else if (data['result'] == 'OK'){
-          window.location.href = "/home";
+          displaySuccessMessage();
         }
 
 
@@ -137,12 +132,12 @@
     });
 
 
-  function displayErrorMessage() {
+  function displayErrorMessage(error) {
 
     const errorMessageHtml = `
       <div class="col-sm-12">
         <div class="alert alert-danger justify-content-between">
-          <strong>Error! </strong>  Wrong username or password combination
+          <strong>Error! </strong>  ${error}
         </div>
       </div>
     `;
@@ -151,6 +146,21 @@
     alertMessagesDiv.innerHTML = errorMessageHtml;
 
   }
+
+  function displaySuccessMessage() {
+
+const errorMessageHtml = `
+  <div class="col-sm-12">
+    <div class="alert alert-success justify-content-between">
+      <strong>Success! </strong>  We have sent your magic link to your email, if you don't see it please check your spam.
+    </div>
+  </div>
+`;
+
+// Append or replace the existing error message
+alertMessagesDiv.innerHTML = errorMessageHtml;
+
+}
   </script>
   
 

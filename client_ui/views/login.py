@@ -11,7 +11,9 @@ from flask import (
 import requests
 import json
 from client_ui.config import Config
-from client_ui.dependencies.login_api import LoginApi
+from client_ui.dependencies.account_api import AccountApi
+from client_ui.dependencies.sqs import EmailSqsSender
+from client_ui.dependencies.enquiry_api import EnquiryApi
 
 login = Blueprint("login", __name__)
 
@@ -23,26 +25,6 @@ def login_page():
 @login.route("/login/validate_login", methods=["POST"])
 def login_validate():
     return LoginManager.validate_login()
-
-@login.route("/login/new_pass/<email>/<random>", methods=["GET", "POST"])
-def new_pass(email, random):
-    if request.method == "GET":
-        return render_template("pages/login/new_pass.html",
-                email=email.lower(),
-                random=random,
-                CDN_URL=Config.CDN_URL
-        )
-                
-    elif request.method == "POST":
-        return LoginManager.set_new_pass(email.lower(), random)
-
-
-@login.route("/login/reset_pass", methods=["GET", "POST"])
-def reset_pass():
-    if request.method == "GET":
-        return render_template("pages/login/reset_pass.html", CDN_URL=Config.CDN_URL)
-    elif request.method == "POST":
-        return LoginManager.reset_pass_post()
 
 
 class LoginManager:
@@ -59,67 +41,39 @@ class LoginManager:
         post_data = request.form
 
         payload = {}
-        payload["username"] = post_data.get("email").lower()
-        payload["password"] = post_data.get("password")
+        payload["email"] = post_data.get("email").lower()
 
-        json_data = LoginApi().verify_login(payload)
+        full_base_url = request.url_root.strip('/')
+
+        get_company_details = AccountApi().get_trader_account_from_url(full_base_url)
+        if get_company_details is False:
+            return jsonify({"result":"error-wrong-url"})
+
+        get_company_details = json.loads(get_company_details)
+        json_Enqs = EnquiryApi().check_any_enuqiries(post_data.get("email").lower(), get_company_details['id'])
+        if json_Enqs == []:
+            return jsonify({"result":"error-password-username"})
+
+        json_data = AccountApi().get_magic_link(post_data.get("email").lower(), get_company_details['company_url'])
         if "detail" in json_data:        
             if json_data["detail"] == "Incorrect email or password":
                 return jsonify({"result":"error-password-username"})
 
-        if "keep_me_logged_in" in post_data:
-            if post_data["keep_me_logged_in"] == "true":
-                session["keep_me_logged_in_company"] = "logged_in"
-                session.permanent = True
+        json_data=json.loads(json_data)
+        if 'magic_link' in json_data:
+
+            EmailSqsSender().send_message({
+                "type": "Magic Link",
+                "email": post_data.get("email").lower(),
+                "from_email": get_company_details['company_response_email'],
+                "name": json_Enqs[0]["full_name"],
+                "title": f"Your magic link has arrived!",
+                'trader_details': get_company_details,
+                'template': 'magic_link',
+                'magic_link': json_data["magic_link"]
+            })
         
-        session["id"] = json_data.get('id')
-        session["access_token"] = json_data.get('access_token')
-        session["refresh_token"] = json_data.get("refresh_token")
-        session["cookie_policy"] = "yes"
-        session["error"] = ""
 
-        return jsonify({"result": "OK"})
+            return jsonify({"result": "OK"})
 
-    @staticmethod
-    def set_new_pass(email, random):
-
-        if random == " ":
-            return render_template(
-                "pages/login/new_pass.html",
-                error="invalid-link",
-                CDN_URL=Config.CDN_URL,
-            )
-
-        payload = {}
-        payload["password"] = request.form["password"]
-        payload["email"] = email.lower()
-        payload["code"] = random
-        
-        json_data = LoginApi().update_password(payload)
-        
-        # code u001 has been specified to be an incorrect email and password combination so we should check for this
-        if "detail" in json_data:
-            if json_data["detail"] == "Not Found":
-                return {"result": "pass-not-set"}
-            if json_data["error_code"] == "u005":
-                return {"result": "expired"}
-            if json_data["error_code"] == "u005":
-                return {"result": "invalid-link"}
-            if json_data['error_code'] == 'u004':
-                return {"result": "expired"}
-        else:
-            return {"result": "new-pass-set"}
-
-    @staticmethod
-    def reset_pass_post():
-
-        payload = {}
-        payload["email"] = request.form["email"].lower()
-        payload["type"] = "reset_pass_email"
-
-        json_data = LoginApi().reset_pass(payload)
-
-        if json_data["error_code"] == "u001":
-            return {"result": "reset-pass-not-sent"}
-        else:
-            return {"result": "reset-pass-sent"}
+        return jsonify({"result":"internal-error"})

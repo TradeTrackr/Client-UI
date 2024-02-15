@@ -5,16 +5,19 @@ from client_ui.config import Config
 
 class EnquiryApi():
 
-    def get_enquiries(self):
-
+    def check_any_enuqiries(self, email, id):
+        data = {
+            "email": email,
+            "company_id": id
+        }
         headers = {
-            "Content-Type": "application/json",
-            "Authorization": f"Bearer {session['access_token']}"
+            "Content-Type": "application/json"
         }
 
         resp = requests.get(
-            Config.ENQUIRY_API_ENDPOINT + f"/get_enquirys/{session['id']}",
+            Config.ENQUIRY_API_ENDPOINT + f"/client/get_enquirys",
             headers=headers,
+            data=json.dumps(data)
         )
 
         return json.loads(resp.text)

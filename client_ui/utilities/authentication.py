@@ -10,6 +10,7 @@ def check_enquiry_accounts(f):
     @wraps(f)
     def decorated(*args, **kwargs):
         params = {}
+
         if 'id' in kwargs:
             enquiry_id = kwargs.get('id')
             company_id = session['id']
@@ -41,6 +42,13 @@ def check_enquiry_accounts(f):
 def token_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
+
+        if 'role' in session:
+            if session['role'] != 'client':
+                return redirect("./login")
+        else:
+            return redirect("./login")
+
         if 'access_token' not in session or 'refresh_token' not in session:
             session.clear()
             return redirect("./login")
