@@ -23,6 +23,17 @@ class AccountApi():
 
         return resp.text
 
+    def validate_token(self, token):
+        url = f"{Config.ACCOUNT_API_ENDPOINT}/user/auth?token={token}"
+
+        headers = {
+            "Content-Type": "application/json"
+        }
+
+        resp = requests.get(url, headers=headers)
+
+        return resp.text
+
     def get_trader_account_from_url(self, url):
         params = {
             "url": url

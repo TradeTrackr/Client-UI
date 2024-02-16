@@ -110,15 +110,16 @@
       .then(response => response.json())
       .then(data => {
         // Handle success
-        if (data['result'] == 'error-password-username'){
-          displayErrorMessage('Wrong username or password combination');
-        } else if (data['result'] == 'error-wrong-url'){
-          displayErrorMessage('Wrong URL used for this username and password combination');
-        } else if (data['result'] == 'OK'){
+        if (data['error']){
+            displayErrorMessage(data['error']);
+       } else if (data['result']){
+        if (data['result'] == 'OK'){
           displaySuccessMessage();
+          document.getElementById('emailaddress').value='';
         }
+        
 
-
+      }
       })
       .catch((error) => {
         // Handle errors

@@ -63,7 +63,6 @@ def token_required(f):
         except ExpiredSignatureError:
             # If Token has expired, attempt to refresh
             try:
-                print('timed out')
                 new_access_token, new_refresh_token = Authentication.refresh_access_token(refresh_token)
                 # Update session with new tokens
                 session['access_token'] = new_access_token
