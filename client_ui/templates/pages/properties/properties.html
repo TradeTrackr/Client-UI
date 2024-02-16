@@ -9,7 +9,7 @@
 {% block content %}
 {% include 'nav.html' %}
 
-<body>
+<body  id="app">
   <!--Main layout-->
   <main style="margin-top: 58px">
     <div class="container pt-4">
@@ -19,9 +19,7 @@
           <nav aria-label="breadcrumb" class="bg-light rounded-3 mb-4">
             <ol class="breadcrumb mb-0">
               <li class="breadcrumb-item"><a href="./home">Home</a></li>
-              <li class="breadcrumb-item"  aria-current="page">User</li>
-              <li class="breadcrumb-item active"  aria-current="page">{{email}}</li>
-
+              <li class="breadcrumb-item active"  aria-current="page">Properties</li>
             </ol>
           </nav>
         </div>

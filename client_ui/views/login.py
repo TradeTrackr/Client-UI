@@ -53,11 +53,20 @@ class LoginManager:
 
         check_token_valid = json.loads(check_token_valid)
 
+        full_base_url = request.url_root.strip('/')
+
+        get_company_details = AccountApi().get_trader_account_from_url(full_base_url)
+        if get_company_details is False:
+            return jsonify({"error":"Wrong URL used for this username and password combination"})
+
+        get_company_details = json.loads(get_company_details)
+
         session["email"] = check_token_valid.get('email')
         session["access_token"] = check_token_valid.get('access_token')
         session["refresh_token"] = check_token_valid.get("refresh_token")
         session["role"] = 'client'
         session["cookie_policy"] = "yes"
+        session['trader_id'] = get_company_details['id']
         session["error"] = ""
         return redirect("./home")
 
@@ -86,7 +95,7 @@ class LoginManager:
 
         json_data=json.loads(json_data)
         if 'magic_link' in json_data:
-
+            print(json_data)
             EmailSqsSender().send_message({
                 "type": "Magic Link",
                 "email": post_data.get("email").lower(),
@@ -98,7 +107,7 @@ class LoginManager:
                 'magic_link': json_data["magic_link"]
             })
         
-
+            print('done')
             return jsonify({"result": "OK"})
 
         return jsonify({"error":"Internal server error, please try again later"})

@@ -12,7 +12,7 @@
 
 
 </style>
-<body>
+<body  id="app">
   <!--Main layout-->
   <div id="loadingSpinner" class="spinner-overlay" style="display:none;">
     <div class="spinner"></div>
@@ -23,10 +23,10 @@
 
       <!--Section: Sales Performance KPIs-->
       <section class="mb-4">
-        <div class="card">
+        <div class="card mb-4">
           <div class="card-header text-center py-3">
             <h5 class="mb-0 text-center">
-              <strong>My quotes</strong>
+              <strong>My Quotes</strong>
             </h5>
           </div>
           <div class="card-body">
@@ -34,36 +34,30 @@
               <table class="table table-hover text-nowrap">
                 <thead>
                   <tr>
-                    <th scope="col">Name</th>
-                    <th scope="col">Number</th>
                     <th scope="col">Enquiry</th>
                     <th scope="col">Date</th>
                     <th scope="col">Status</th>
                     <th scope="col">Action</th>
 
-
                   </tr>
                 </thead>
-                <tbody id="enquiries-table">
+                <tbody id="quotes-table">
                   
                 </tbody>
               </table>
             </div>
+          </div>  </div>
+          <br>
+          <div id="properties-section">
+  
+  
           </div>
-        </div>
+
+
+     
+        
         <br>
 
-              <div class="card">
-                <div class="card-header text-center py-3">
-                  <h5 class="mb-0 text-center">
-                    <strong>Calendar</strong>
-                  </h5>
-                </div>
-                <div class="card-body p-0">
-                  <div id="calendar"></div>
-                </div>
-              </div>
-            
 
               <div class="modal modal-top fade calendar-modal" id="modal-view-event-add" tabindex="-1" aria-labelledby="newquotemodalLabel" aria-hidden="true">
             
@@ -72,7 +66,7 @@
                   <div class="modal-dialog">
                     <div class="modal-content" style="height: 560px;">
                       <div class="modal-header">
-                        <h5 class="modal-title" id="newquotemodalLabel">New Event</h5>
+                        <h5 class="modal-title" id="newquotemodalLabel">New Enquiry</h5>
                         <button type="button" class="btn-close" data-mdb-ripple-init data-dismiss="modal" aria-label="Close"></button>
                       </div>
                       <div class="modal-body">
@@ -150,6 +144,97 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/air-datepicker/2.2.3/js/i18n/datepicker.en.js"></script>
 
 <script>
+
+var enquiry = {{ enquiry | tojson }};
+
+
+    function formatDate(dateString) {
+      const options = { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false };
+      const date = new Date(dateString);
+      return new Intl.DateTimeFormat('default', options).format(date).replace(/\//g, '-').replace(',', '');
+  }
+
+
+  document.addEventListener('DOMContentLoaded', function() {
+    let counter = 0;
+    const container = document.getElementById('properties-section');
+  let rows = ''; // Initialize an empty string to hold all rows
+
+  for (enq in enquiry){
+          var address_line1=""
+          var address_line2=""
+          var postcode=""
+          var full_name=""
+          var most_recent_activity=""
+
+          // Check if the jsonData has the required properties
+          if (enquiry[enq].address_line1) {
+            var address_line1 = enquiry[enq].address_number_or_name + ' ' +enquiry[enq].address_line1;
+          }
+          if (enquiry[enq].address_line2) {
+            var address_line2 =  enquiry[enq].address_line2;
+          }
+          if (enquiry[enq].postcode) {
+            var postcode =  enquiry[enq].postcode;
+          }
+
+          if (enquiry[enq].full_name) {
+            var full_name =  enquiry[enq].full_name;
+          }
+
+          if (enquiry[enq].most_recent_activity) {
+            var most_recent_activity =  enquiry[enq].most_recent_activity.status;
+
+          }
+        // Generate the card HTML for each enquiry
+        let card = `
+            <div class="col-lg-4">
+              <a href="./client/enquiry/${enquiry[enq].id}">  <div class="card mb-4">
+                    <div class="card-body text-center">
+                        <img src="./static/images/home.png" alt="home" class="img-fluid" style="width: 100px;">
+                        <h5 class="my-3">${address_line1}</h5>
+                        <h5 class="my-3">${address_line2}</h5>
+                        <p class="text-muted mb-1">${postcode}</p>
+                        <p class="text-muted mb-1">${full_name}</p>
+                        <div class="d-flex justify-content-center mb-2">
+                            <span class="badge badge-success rounded-pill">${most_recent_activity}</span>
+                        </div>
+                    </div>
+                </div></a>
+            </div>
+        `;
+
+        // Check if a new row should be started
+        if (counter % 3 === 0) {
+            if (counter !== 0) { // Close the previous row, if it's not the first iteration
+                rows += '</div>';
+            }
+            rows += '<div class="row">'; // Start a new row
+        }
+
+        rows += card; // Append the card to the current row
+        counter++;
+    }
+
+    // Close the last row
+    if (counter % 3 !== 0) {
+        rows += '</div>';
+    }
+
+    // Set the innerHTML of the container to the accumulated rows
+    container.innerHTML = rows;
+
+
+    function createRowDiv() {
+        const rowDiv = document.createElement('div');
+        rowDiv.className = 'row';
+        return rowDiv;
+    }
+
+
+});
+
+
   // Global variables
 const loadingSpinner = document.getElementById('loadingSpinner');
 let categories_list = [];

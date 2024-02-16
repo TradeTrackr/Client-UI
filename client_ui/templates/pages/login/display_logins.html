@@ -7,7 +7,7 @@
 {% endblock %}
 
 {% block content %}
-<body>
+<body id="loginbody">
   <div id="loadingSpinner" class="spinner-overlay" style="display:none;">
     <div class="spinner"></div>
 </div>
@@ -110,10 +110,10 @@
       .then(response => response.json())
       .then(data => {
         // Handle success
-        if (data['error']){
+        if ('error' in data) {
             displayErrorMessage(data['error']);
-       } else if (data['result']){
-        if (data['result'] == 'OK'){
+        } else if ('result' in data) {
+          if (data['result'] == 'OK') {
           displaySuccessMessage();
           document.getElementById('emailaddress').value='';
         }

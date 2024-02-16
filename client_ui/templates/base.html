@@ -1,8 +1,6 @@
 <html>
   <head>
     <base href="{{request.url_root}}">
-    <script src="{{config.CDN_URL}}/static/js/optistack_style_loader.js"></script>
-
     {% block meta %}<meta name="viewport" content="width=device-width, initial-scale=1.0">
 {% endblock %}
     <!-- css includes -->
@@ -14,12 +12,14 @@
   <title> - TradeTrakr</title>
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://use.fontawesome.com/releases/v6.0.0/css/all.css" />
+  <script src="{{config.CDN_URL}}/js/optistack_style_loader.js"></script>
+
   <!-- Google Fonts Roboto -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" />
   <!-- MDB -->
-  <link rel="stylesheet" href="/static/css/mdb.min.css" />
+  <link rel="stylesheet" href="{{config.CDN_URL}}/css/mdb.min.css" />
   <!-- Custom styles -->
-  <link rel="stylesheet" href="/static/css/stylesheet.css" />
+  <link rel="stylesheet" href="{{config.CDN_URL}}/css/stylesheet.css" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.js" integrity="sha512-d9xgZrVZpmmQlfonhQUvTR7lMPtO7NkZMkA0ABN3PHCbKA5nqylQ/yWlFAyY6hYgdF1Qh6nYiuADWwKB4C2WSw=="
     crossorigin="anonymous"></script>
 
@@ -31,7 +31,7 @@
  
 
   <!-- script includes -->
-  <script type="text/javascript" src="/static/js/mdb.umd.min.js"></script>
+  <script type="text/javascript" src="{{config.CDN_URL}}/js/mdb.umd.min.js"></script>
 
   <!-- Custom scripts -->
 
