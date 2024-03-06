@@ -12,10 +12,17 @@ dashboard = Blueprint('dashboard', __name__)
 @authentication.token_required
 def home():
     get_enquiries = EnquiryApi().get_enquiries()
+    get_enquiries_address = organise_enquiries_by_address(get_enquiries)
+    enquiry_ids = []
+    for enquiry in get_enquiries:
+        enquiry_ids.append(enquiry['id'])
+
+    quotes = QuotesAPI().get_quotes(enquiry_ids)
 
     return render_template("pages/dashboard/dashboard.html",
                             error="none",
-                            enquiry=get_enquiries,
+                            enquiry=get_enquiries_address,
+                            quotes=quotes,
                             CDN_URL=Config.CDN_URL
                         )
 
@@ -29,25 +36,31 @@ def get_quotes():
 @dashboard.route("/dashboard/new_event", methods=["POST"])
 def new_event():
     post_data = request.form
-
-    new_quote = QuotesAPI().new_event(post_data)
-
-    return new_quote
+    return QuotesAPI().new_event(post_data)
 
 
 @dashboard.route("/dashboard/update_event/<id>", methods=["POST"])
 def update_event(id):
     post_data = request.get_json()
-    print(post_data)
-
-    new_quote = QuotesAPI().update_event(post_data, id)
-    print(new_quote)
-    return new_quote
+    return QuotesAPI().update_event(post_data, id)
 
 
 @dashboard.route("/dashboard/get_categories")
 @authentication.token_required
 def get_categories():
-    categories = AccountApi().get_categories()
-    print(categories)
-    return categories
+    return AccountApi().get_categories()
+
+
+def organise_enquiries_by_address(enquiries_list):
+    new_enq_dict = {}
+
+    for enquiry in enquiries_list:
+        address_string = f'{enquiry.get("address_line1", "")} {enquiry.get("address_line2", "")} {enquiry.get("postcode", "")}'.replace(' ', '_')
+
+        if not new_enq_dict.get(address_string):
+            new_enq_dict[address_string] = {}
+
+        new_enq_dict[address_string]['address_line1'] =  f'{enquiry.get("address_line1", "")} {enquiry.get("address_line2", "")}'
+        new_enq_dict[address_string]['address_postcode'] =  f'{enquiry.get("postcode", "")}'
+
+    return new_enq_dict

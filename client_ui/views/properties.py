@@ -8,52 +8,28 @@ from client_ui.dependencies.quotes_api import QuotesAPI
 
 properties = Blueprint('properties', __name__)
 
-@properties.route("/properties/enquiry/<id>")
+@properties.route("/properties")
 @authentication.token_required
-@authentication.check_enquiry_accounts
-def enquiry(id):
-    enquiry = EnquiryApi().get_enquiry_and_activity(id)
-    quotes = QuotesAPI().get_quotes(id)
-
-    if enquiry != []:
-        enquiry=enquiry[0]
-    return render_template("pages/properties/enquiry.html",
-                            error="none",
-                            CDN_URL=Config.CDN_URL,
-                            categories=json.loads(categories),
-                            quotes=quotes,
-                            enquiry=enquiry
-                        )
-
-
-@properties.route("/properties/enquiries")
-@authentication.token_required
-def enquiries():
+def get_properties():
     enquiries = EnquiryApi().get_enquiries()
 
-    return render_template("pages/properties/enquiries.html",
+    return render_template("pages/properties/properties.html",
                             error="none",
                             CDN_URL=Config.CDN_URL,
-                            enquiries_list=enquiries
+                            properties_list=organise_enquiries_by_address(enquiries)
                         )
 
 
-@properties.route("/user/profile/<email>")
-@authentication.token_required
-@authentication.check_enquiry_accounts
-def user_profile(email):
-    enquiry = EnquiryApi().get_user_properties_and_history(email)
-    return render_template("pages/properties/user.html",
-                            error="none",
-                            CDN_URL=Config.CDN_URL,
-                            email=email,
-                            enquiry=enquiry
-                        )
+def organise_enquiries_by_address(enquiries_list):
+    new_enq_dict = {}
 
-@properties.route("/properties/new_quote", methods=["POST"])
-def new_quote():
-    post_data = request.form
-    new_quote = QuotesAPI().new_quote(post_data)
-    EnquiryApi().update_enquiry_status('Quote Sent', post_data.get('enquiry_id'))
+    for enquiry in enquiries_list:
+        address_string = f'{enquiry.get("address_line1", "")} {enquiry.get("address_line2", "")} {enquiry.get("postcode", "")}'.replace(' ', '_')
 
-    return new_quote
+        if not new_enq_dict.get(address_string):
+            new_enq_dict[address_string] = {}
+
+        new_enq_dict[address_string]['address_line1'] =  f'{enquiry.get("address_line1", "")} {enquiry.get("address_line2", "")}'
+        new_enq_dict[address_string]['address_postcode'] =  f'{enquiry.get("postcode", "")}'
+
+    return new_enq_dict

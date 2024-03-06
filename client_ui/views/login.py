@@ -37,8 +37,11 @@ class LoginManager:
 
     @staticmethod
     def display_login_page():
-        session["next"] = request.args.get("next", "/")
-        if session.get("keep_me_logged_in_company") == "logged_in":
+        next = request.args.get("next", "/")
+        session['next'] = next
+        if session.get("keep_me_logged_in_client") == "logged_in":
+            if next != '/':
+                return redirect(next)
             return redirect("./home")
         return render_template("pages/login/display_logins.html", error="none", CDN_URL=Config.CDN_URL)
 
@@ -68,6 +71,9 @@ class LoginManager:
         session["cookie_policy"] = "yes"
         session['trader_id'] = get_company_details['id']
         session["error"] = ""
+        
+        if session['next'] != '/':
+            return redirect(next)
         return redirect("./home")
 
     @staticmethod
@@ -93,9 +99,14 @@ class LoginManager:
             if json_data["detail"] == "Incorrect email or password":
                 return jsonify({"error":"Wrong username or password combination"})
 
+
+        if "keep_me_logged_in" in post_data:
+            if post_data["keep_me_logged_in"] == "true":
+                session["keep_me_logged_in_client"] = "logged_in"
+                session.permanent = True
+
         json_data=json.loads(json_data)
         if 'magic_link' in json_data:
-            print(json_data)
             EmailSqsSender().send_message({
                 "type": "Magic Link",
                 "email": post_data.get("email").lower(),
@@ -107,7 +118,6 @@ class LoginManager:
                 'magic_link': json_data["magic_link"]
             })
         
-            print('done')
             return jsonify({"result": "OK"})
 
         return jsonify({"error":"Internal server error, please try again later"})

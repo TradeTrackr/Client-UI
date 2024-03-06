@@ -51,7 +51,7 @@
 </body>
 
 <script>
-    var enquiry = {{ enquiry | tojson }};
+    var properties = {{ properties_list | tojson }};
     function formatDate(dateString) {
       const options = { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false };
       const date = new Date(dateString);
@@ -63,45 +63,24 @@
     const container = document.getElementById('properties-section');
   let rows = ''; // Initialize an empty string to hold all rows
 
-  for (enq in enquiry){
+  for (prop in properties){
           var address_line1=""
-          var address_line2=""
           var postcode=""
-          var full_name=""
-          var most_recent_activity=""
-
           // Check if the jsonData has the required properties
-          if (enquiry[enq].address_line1) {
-            var address_line1 = enquiry[enq].address_number_or_name + ' ' +enquiry[enq].address_line1;
+          if (properties[prop].address_line1) {
+            var address_line1 = properties[prop].address_number_or_name + ' ' +properties[prop].address_line1;
           }
-          if (enquiry[enq].address_line2) {
-            var address_line2 =  enquiry[enq].address_line2;
-          }
-          if (enquiry[enq].postcode) {
-            var postcode =  enquiry[enq].postcode;
-          }
-
-          if (enquiry[enq].full_name) {
-            var full_name =  enquiry[enq].full_name;
-          }
-
-          if (enquiry[enq].most_recent_activity) {
-            var most_recent_activity =  enquiry[enq].most_recent_activity.status;
-
+          if (properties[prop].postcode) {
+            var postcode =  properties[prop].postcode;
           }
         // Generate the card HTML for each enquiry
         let card = `
             <div class="col-lg-4">
-              <a href="./client/enquiry/${enquiry[enq].id}">  <div class="card mb-4">
+              <a href="./enquiries/${prop}">  <div class="card mb-4">
                     <div class="card-body text-center">
                         <img src="./static/images/home.png" alt="home" class="img-fluid" style="width: 100px;">
                         <h5 class="my-3">${address_line1}</h5>
-                        <h5 class="my-3">${address_line2}</h5>
                         <p class="text-muted mb-1">${postcode}</p>
-                        <p class="text-muted mb-1">${full_name}</p>
-                        <div class="d-flex justify-content-center mb-2">
-                            <span class="badge badge-success rounded-pill">${most_recent_activity}</span>
-                        </div>
                     </div>
                 </div></a>
             </div>

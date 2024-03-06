@@ -63,13 +63,7 @@
                       </div>
                       <br>
 
-                      <div class="form-outline" data-mdb-input-init>
-                        <select name="category_id" class="form-select" id="category_box" required>
-                          <option value="">Select Category</option>
-
-                      </select>
-      
-                      </div>  
+          
                   
                       <br>
                       <div class="form-outline" data-mdb-input-init>
@@ -311,7 +305,6 @@ jQuery(document).ready(function($) {
 <script>
 
     var jsonData = {{ enquiry | tojson }};
-    var jsonDataCategories = {{ categories | tojson }};
     var jsonDataQuotes = {{ quotes | tojson }};
 
     function formatDate(dateString) {
@@ -320,17 +313,7 @@ jQuery(document).ready(function($) {
       return new Intl.DateTimeFormat('default', options).format(date).replace(/\//g, '-').replace(',', '');
   }
     document.addEventListener('DOMContentLoaded', function() {
-      if (! jsonDataCategories == []) {
-        var selectBox = document.getElementById('category_box'); // Replace 'select_box' with your select element's ID
-        jsonDataCategories['categories'].forEach(function(category) {
 
-            var option = document.createElement('option');
-            option.value = category.id;
-            option.text = category.category;
-            selectBox.appendChild(option);
-        });
-              
-      }
 
       var allDayCheckbox = document.getElementById('allDayCheckbox');
   var datetimePickerEnd = document.getElementById('datetimePickerEnd');

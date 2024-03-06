@@ -23,7 +23,11 @@
         <div class="card">
           <div class="card-header text-center py-3">
             <h5 class="mb-0 text-center">
-              <strong>Enquiries</strong>
+              <strong>Enquiries
+                {% if address %}
+                 for {{ address }}
+                {% endif %}
+                </strong>
             </h5>
           </div>
           <div class="card-body">
@@ -31,6 +35,9 @@
               <table class="table table-hover text-nowrap">
                 <thead>
                   <tr>
+                    {% if address %}
+                    <th scope="col">Address</th>
+                   {% endif %}
                     <th scope="col">Enquiry</th>
                     <th scope="col">Date</th>
                     <th scope="col">Status</th>
@@ -61,6 +68,11 @@
 <script>
   // Assuming enquiries_list is passed to the template as a JSON string
   const enquiriesList = {{ enquiries_list | tojson | safe }};
+  {% if address %}
+  const address = {{ address }}
+  {% else %}
+  const address = ''
+  {% endif %}
   const loadingSpinner = document.getElementById('loadingSpinner');
 
   document.addEventListener('DOMContentLoaded', function() {
@@ -139,21 +151,37 @@
              
             `
           }
-          let row = `<tr>
-              <td>${enquiry.full_name}</td>
-              <td>${enquiry.phone_number}</td>
-            
-              ${td_text}
-              <td>${formattedTimestamp}</td>
-              <td> <span class="badge badge-success rounded-pill">New</span></td>
-              <td>
-                <a href="./client/enquiry/${enquiry.id}">  <button type="button" class="btn btn-link btn-sm btn-rounded" onclick="showSpinnerAndBlur()">
-          View
-        </button></a>
-                
+          if (address != ''){
+            let row = `<tr>
+              <td>${address}</td>
+            ${td_text}
+            <td>${formattedTimestamp}</td>
+            <td> <span class="badge badge-success rounded-pill">New</span></td>
+            <td>
+              <a href="./enquiries/enquiry/${enquiry.id}">  <button type="button" class="btn btn-link btn-sm btn-rounded" onclick="showSpinnerAndBlur()">
+            View
+            </button></a>
+              
             </td>
 
-          </tr>`;
+            </tr>`;
+
+          }else{
+            let row = `<tr>
+            ${td_text}
+            <td>${formattedTimestamp}</td>
+            <td> <span class="badge badge-success rounded-pill">New</span></td>
+            <td>
+              <a href="./enquiries/enquiry/${enquiry.id}">  <button type="button" class="btn btn-link btn-sm btn-rounded" onclick="showSpinnerAndBlur()">
+            View
+            </button></a>
+              
+            </td>
+
+            </tr>`;
+
+          }
+ 
           tableBody.innerHTML += row; // Append each row to the table body
       });
   }

@@ -5,7 +5,11 @@ from client_ui.config import Config
 
 class QuotesAPI():
 
-    def get_quotes(self, id):
+    def get_quotes(self, enquiry_ids):
+        params={
+            "enquiry_ids":enquiry_ids,
+            "company_id":  session['trader_id']
+        }
 
         headers = {
             "Content-Type": "application/json",
@@ -13,8 +17,9 @@ class QuotesAPI():
         }
 
         resp = requests.get(
-            Config.QUOTES_API_ENDPOINT + f"/quote/get_quotes/{id}",
+            Config.QUOTES_API_ENDPOINT + f"/quote/get_quotes_client",
             headers=headers,
+            data=json.dumps(params),
         )
 
         return json.loads(resp.text)
